@@ -4,14 +4,14 @@
   "description": "",
   "homepage": "",
   "author": {
-    "name": "",
-    "email": "",
-    "url": ""
+    "name": "Bitovi",
+    "email": "contact@bitovi.com",
+    "url": "http://bitovi.com/"
   },
   "main": "lib/",
   "scripts": {
     "test": "npm run jshint && npm run mocha",
-    "jshint": "jshint test/. default/index.js --config",
+    "jshint": "jshint . --config",
     "mocha": "mocha test/ --timeout 120000",
     "publish": "git push origin --tags && git push origin",
     "release:patch": "npm version patch && npm publish",
@@ -24,7 +24,7 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "lodash": "^4.17.4",
+    "js-yaml": "^3.10.0",
     "yeoman-generator": "^1.1.1"
   },
   "devDependencies": {
