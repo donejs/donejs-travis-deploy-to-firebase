@@ -1,18 +1,12 @@
 var yaml = require('js-yaml');
+var includes = require('lodash.includes');
 var Generator = require('yeoman-generator');
 
 module.exports = Generator.extend({
   constructor: function constructor(args, opts) {
     Generator.call(this, args, opts);
+    this.deployStep = 'npm run deploy:ci';
     this.travisConfigPath = this.destinationPath('.travis.yml');
-    this.beforeDeploySteps = [
-      'git config --global user.email "me@example.com"',
-      'git config --global user.name "firebase deploy bot"',
-      'node build',
-      'git add dist/ --force',
-      'git commit -m "Updating build."',
-      'npm run deploy:ci'
-    ];
   },
 
   initializing: function initializing() {
@@ -26,20 +20,29 @@ module.exports = Generator.extend({
     }
 
     this.travisYml = yaml.safeLoad(this.fs.read(this.travisConfigPath));
-    if (this.travisYml.before_deploy) { //jshint ignore:line
+    if (includes(this.travisYml.before_deploy, this.deployStep)) { //jshint ignore:line
       this.abort = true;
-      this.log.error(
-        'There are before_deploy steps in your .travis.yml already. ' +
-          'Please delete the "before_deploy" section before running this command.'
-      );
+      this.log('Firebase deploy step already found in .travis.yml');
       return;
     }
   },
 
   writing: function writing() {
     if (!this.abort) {
-      this.log('Adding before deploy steps to ' + this.travisConfigPath);
-      this.travisYml.before_deploy = this.beforeDeploySteps; //jshint ignore:line
+      this.log('Adding firebase deploy step to ' + this.travisConfigPath);
+
+      /* jshint ignore:start */
+      if (typeof this.travisYml.before_deploy == 'undefined') {
+        this.travisYml.before_deploy = this.deployStep;
+      } else if (typeof this.travisYml.before_deploy == 'string') {
+        this.travisYml.before_deploy = [
+          this.travisYml.before_deploy,
+          this.deployStep
+        ];
+      } else if (Array.isArray(this.travisYml.before_deploy)) {
+        this.travisYml.before_deploy.push(this.deployStep);
+      }
+      /* jshint ignore:end */
 
       this.fs.write(this.travisConfigPath, yaml.safeDump(this.travisYml));
     }
