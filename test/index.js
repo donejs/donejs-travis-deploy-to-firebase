@@ -17,21 +17,66 @@ describe('donejs-travis-to-firebase', function() {
     });
   });
 
-  describe('travis.yml has before_deploy steps', function() {
+  describe('travis.yml has firebase deploy step already', function() {
     before(function(done) {
       helpers
         .run(path.join(__dirname, '../default'))
         .inTmpDir(function(dir) {
           fs.copyFileSync(
-            path.join(__dirname, 'travis_before_deploy_fixture.yml'),
+            path.join(__dirname, 'travis_with_step_fixture.yml'),
             path.join(dir, '.travis.yml')
           );
         })
         .on('end', done);
     });
 
-    it('does not override travis.yml before_deploy steps', function() {
-      assert.fileContent('.travis.yml', /echo 'ready\?'/);
+    it('does not duplicate deployment step', function() {
+      assert.fileContent('.travis.yml', "before_deploy: 'npm run deploy:ci'");
+    });
+  });
+
+  describe('travis.yml has single before_deploy step (non firebase)', function() {
+    before(function(done) {
+      helpers
+        .run(path.join(__dirname, '../default'))
+        .inTmpDir(function(dir) {
+          fs.copyFileSync(
+            path.join(__dirname, 'travis_without_step_fixture.yml'),
+            path.join(dir, '.travis.yml')
+          );
+        })
+        .on('end', done);
+    });
+
+    it('does not remove existing before_deploy step', function() {
+      assert.fileContent('.travis.yml', "echo 'ready?'");
+    });
+
+    it('adds firebase deployment step', function() {
+      assert.fileContent('.travis.yml', /npm run deploy:ci/);
+    });
+  });
+
+  describe('travis.yml has multiple before_deploy steps (non firebase)', function() {
+    before(function(done) {
+      helpers
+        .run(path.join(__dirname, '../default'))
+        .inTmpDir(function(dir) {
+          fs.copyFileSync(
+            path.join(__dirname, 'travis_multiple_before_deploy_fixture.yml'),
+            path.join(dir, '.travis.yml')
+          );
+        })
+        .on('end', done);
+    });
+
+    it('does not remove existing before_deploy steps', function() {
+      assert.fileContent('.travis.yml', "echo 'ready?'");
+      assert.fileContent('.travis.yml', "echo 'are you sure?'");
+    });
+
+    it('adds firebase deployment step', function() {
+      assert.fileContent('.travis.yml', /npm run deploy:ci/);
     });
   });
 
@@ -48,9 +93,8 @@ describe('donejs-travis-to-firebase', function() {
         .on('end', done);
     });
 
-    it('adds before_deploy steps', function() {
-      assert.fileContent('.travis.yml', /firebase deploy bot/);
-      assert.fileContent('.travis.yml', /npm run deploy:ci/);
+    it('adds firebase before_deploy step', function() {
+      assert.fileContent('.travis.yml', "before_deploy: 'npm run deploy:ci'");
     });
   });
 });
