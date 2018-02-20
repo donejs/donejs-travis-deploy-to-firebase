@@ -35,6 +35,24 @@ describe('donejs-travis-to-firebase', function() {
     });
   });
 
+  describe('travis.yml has global encrypted variable already', function() {
+    before(function(done) {
+      helpers
+        .run(path.join(__dirname, '../default'))
+        .inTmpDir(function(dir) {
+          fs.copyFileSync(
+            path.join(__dirname, 'travis_global_encrypted_fixture.yml'),
+            path.join(dir, '.travis.yml')
+          );
+        })
+        .on('end', done);
+    });
+
+    it('does not override globals', function() {
+      assert.fileContent('.travis.yml', 'secure: foobarbaz');
+    });
+  });
+
   describe('travis.yml has single before_deploy step (non firebase)', function() {
     before(function(done) {
       helpers
@@ -45,6 +63,11 @@ describe('donejs-travis-to-firebase', function() {
             path.join(dir, '.travis.yml')
           );
         })
+        .on('ready', function(generator) {
+          generator._encryptTravisToken = function() {
+            return Promise.resolve('ENCRYPTED_TOKEN');
+          };
+        })
         .on('end', done);
     });
 
@@ -54,6 +77,12 @@ describe('donejs-travis-to-firebase', function() {
 
     it('adds firebase deployment step', function() {
       assert.fileContent('.travis.yml', /npm run deploy:ci/);
+    });
+
+    it('adds encrypted variable', function() {
+      assert.fileContent('.travis.yml', 'env:');
+      assert.fileContent('.travis.yml', 'global:');
+      assert.fileContent('.travis.yml', 'secure: ENCRYPTED_TOKEN');
     });
   });
 
@@ -66,6 +95,11 @@ describe('donejs-travis-to-firebase', function() {
             path.join(__dirname, 'travis_multiple_before_deploy_fixture.yml'),
             path.join(dir, '.travis.yml')
           );
+        })
+        .on('ready', function(generator) {
+          generator._encryptTravisToken = function() {
+            return Promise.resolve('ENCRYPTED_TOKEN');
+          };
         })
         .on('end', done);
     });
@@ -89,6 +123,11 @@ describe('donejs-travis-to-firebase', function() {
             path.join(__dirname, 'travis_fixture.yml'),
             path.join(dir, '.travis.yml')
           );
+        })
+        .on('ready', function(generator) {
+          generator._encryptTravisToken = function() {
+            return Promise.resolve('ENCRYPTED_TOKEN');
+          };
         })
         .on('end', done);
     });
