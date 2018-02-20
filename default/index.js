@@ -4,7 +4,7 @@ var find = require('lodash/find');
 var encrypt = require('travis-encrypt');
 var isArray = require('lodash/isArray');
 var isObject = require('lodash/isObject');
-var includes = require('lodash.includes');
+var includes = require('lodash/includes');
 var Generator = require('yeoman-generator');
 var parseGithubUrl = require('parse-github-url');
 
