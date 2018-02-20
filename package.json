@@ -1,5 +1,5 @@
 {
-  "name": "donejs-travis-to-firebase",
+  "name": "donejs-travis-deploy-to-firebase",
   "version": "0.0.2",
   "description": "",
   "homepage": "",
@@ -19,7 +19,7 @@
     "release:major": "npm version major && npm publish"
   },
   "keywords": [
-    "",
+    "donejs",
     "donejs-generator"
   ],
   "license": "MIT",
