@@ -114,13 +114,18 @@ module.exports = Generator.extend({
 
   _encryptTravisToken: function encryptTravisToken() {
     var props = this.props;
+    var token = props.firebaseCiToken;
+
+    if(!token) {
+      throw new Error("A Firebase CI token must be provided");
+    }
 
     this.log('Encrypting Travis CI Token...');
     return new Promise(function(resolve, reject) {
       encrypt(
         {
           repo: `${props.githubUsername}/${props.githubAppName}`,
-          data: `FIREBASE_TOKEN="${props.travisCiToken}"`
+          data: `FIREBASE_TOKEN="${token}"`
         },
         function(err, blob) {
           if (err) {
